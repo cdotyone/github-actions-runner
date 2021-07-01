@@ -23,8 +23,8 @@ $ docker run -d \
     -v /tmp:/tmp \
     -e GH_REPOSITORY=xxxxxxxxxxxx \
     -e GH_RUNNER_TOKEN=xxxxxxxxxxxxx \
-    -e GH_RUNNER_LABELS=label1,label2 \
-    samber/github-actions-runner:latest
+    -e GH_RUNNER_LABELS=node,golang,java,node \
+    cdotyone/github-actions-runner:latest
 ```
 
 ```yaml
@@ -39,30 +39,6 @@ jobs:
     steps:
       - name: Hello world
         run: echo "Hello world"
-```
-
-### Runners with language support (NodeJS, Python3...)
-
-Just select your runner in the Docker image tag.
-
-Currently available:
-
-- samber/github-actions-runner:**node**
-- samber/github-actions-runner:**golang**
-- samber/github-actions-runner:**python**
-- samber/github-actions-runner:**java**
-- samber/github-actions-runner:**php**
-
-```sh
-# start a NodeJS runner
-
-$ docker run -d \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v /tmp:/tmp \
-    -e GH_REPOSITORY=xxxxxxxxxxxx \
-    -e GH_RUNNER_TOKEN=xxxxxxxxxxxxx \
-    -e GH_RUNNER_LABELS=node \
-    samber/github-actions-runner:node
 ```
 
 ```yaml
@@ -86,7 +62,7 @@ jobs:
 
 ### Missing language support ?
 
-You just need to write a Dockerfile starting with `FROM samber/github-actions-runner:latest`.
+You just need to write a Dockerfile starting with `FROM cdotyone/github-actions-runner:latest`.
 
 You can contribute to this repository or create your own Docker image.
 
@@ -100,14 +76,14 @@ version: '3'
 services:
 
   runner:
-    image: samber/github-actions-runner:latest
+    image: cdotyone/github-actions-runner:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp:/tmp
     environment:
       - GH_REPOSITORY=xxxxxxxxxxxx
       - GH_RUNNER_TOKEN=xxxxxxxxxxxxx
-      - GH_RUNNER_LABELS=label1,label2 \
+      - GH_RUNNER_LABELS=node,golang,java,node \
     restart: unless-stopped
 ```
 
@@ -121,109 +97,12 @@ $ docker-compose up -d
 $ docker-compose scale runner=3
 ```
 
-### Runners with language support
-
-You will need to register multiple runners, with different name+tokens.
-
-In the following example, we create 2 self-hosted runners: node and golang, with respective tag: "node" and "golang". We will start 2 instances of each.
-
-```yaml
-version: '3'
-
-services:
-
-  runner-node:
-    image: samber/github-actions-runner:node
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /tmp:/tmp
-    environment:
-      - GH_REPOSITORY=yyyyyyyyyyyyy
-      - GH_RUNNER_TOKEN=xxxxxxxxxxxxx
-      - GH_RUNNER_LABELS=node \
-    restart: unless-stopped
-
-  runner-golang:
-    image: samber/github-actions-runner:golang
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /tmp:/tmp
-    environment:
-      - GH_REPOSITORY=yyyyyyyyyyyyy
-      - GH_RUNNER_TOKEN=zzzzzzzzzzzzz
-      - GH_RUNNER_LABELS=golang \
-    restart: unless-stopped
-```
-
-```sh
-$ docker-compose up -d
-$ docker-compose scale runner-node=2 runner-golang=2
-```
-
-```yaml
-# .github/workflows/main.yml
-
-on:
-  - push
-
-jobs:
-
-  frontend:
-    runs-on: [self-hosted, node]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Fetch dependencies
-        run: yarn
-      - name: Build application
-        run: npm run build
-      - name: Execute tests
-        run: npm run test
-
-  api:
-    runs-on: [self-hosted, golang]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Fetch dependencies
-        run: go mod download
-      - name: Build application
-        run: go build -o hello-world
-      - name: Execute tests
-        run: go testt
-```
-
 ## 🤯 Advanced
 
 ### Run as root
 
 For whatever (bad 😅) reason, if you need to start runners as root, you have to set container user to `root`, and add an empty `RUNNER_ALLOW_RUNASROOT` environment variables.
 
-## 🔬 Build
-
-```bash
-docker build -f Dockerfile          -t samber/github-actions-runner:latest  -t samber/github-actions-runner:2.272.0 .
-docker build -f Dockerfile.node     -t samber/github-actions-runner:node    -t samber/github-actions-runner:node-2.272.0 .
-docker build -f Dockerfile.golang   -t samber/github-actions-runner:golang  -t samber/github-actions-runner:golang-2.272.0 .
-docker build -f Dockerfile.python   -t samber/github-actions-runner:python  -t samber/github-actions-runner:python-2.272.0 .
-docker build -f Dockerfile.java     -t samber/github-actions-runner:java    -t samber/github-actions-runner:java-2.272.0 .
-docker build -f Dockerfile.php      -t samber/github-actions-runner:php     -t samber/github-actions-runner:php-2.272.0 .
-
-docker push samber/github-actions-runner:latest
-docker push samber/github-actions-runner:2.272.0
-
-docker push samber/github-actions-runner:node
-docker push samber/github-actions-runner:node-2.272.0
-
-docker push samber/github-actions-runner:golang
-docker push samber/github-actions-runner:golang-2.272.0
-
-docker push samber/github-actions-runner:python
-docker push samber/github-actions-runner:python-2.272.0
-
-docker push samber/github-actions-runner:java
-docker push samber/github-actions-runner:java-2.272.0
-
-docker push samber/github-actions-runner:php
-docker push samber/github-actions-runner:php-2.272.0
 ```
 
 ## ♻️  Host cleanup
@@ -244,16 +123,8 @@ There are many ways to contribute: writing code, documentation, reporting issues
 
 ## Author
 
-👤 **Samuel Berthe**
-
-* Twitter: [@samuelberthe](https://twitter.com/samuelberthe)
-* Github: [@samber](https://github.com/samber)
-
-## 💫 Show your support
-
-Give a ⭐️ if this project helped you!
-
-[![support us](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/samber)
+👤 [**Samuel Berthe**](https://github.com/samber)
+👤 **Chris Doty** <modified by>
 
 ## 📝 License
 

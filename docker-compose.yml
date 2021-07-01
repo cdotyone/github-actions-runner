@@ -1,0 +1,7 @@
+﻿version: '3'
+services:
+  github-actions-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: result/latest
